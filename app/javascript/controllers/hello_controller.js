@@ -31,9 +31,15 @@ export default class extends Controller {
   }
 
   setDatesToSend() {
-    console.log(this.picker.getStartDate());
-    document.getElementById('startDate').setAttribute('value', this.picker.getStartDate().toDateString());
-    document.getElementById('endDate').setAttribute('value', this.picker.getEndDate().toDateString());
+    const startDate = this.picker.getStartDate().toJSDate().toDateString();
+    const endDate = this.picker.getEndDate().toJSDate().toDateString();
+    console.log(
+      this.picker.getStartDate().toJSDate(),
+      this.picker.getEndDate().toJSDate()
+    );
+
+    document.getElementById('startDate').setAttribute('value', startDate);
+    document.getElementById('endDate').setAttribute('value', endDate);
   }
 
   fetchDateRangesAndRender() {

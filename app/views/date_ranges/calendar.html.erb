@@ -1,21 +1,20 @@
-<turbo-frame data-controller="hello">
-  <div id="datepicker" style='display: hidden;'/>
+<div data-controller="hello">
+  <div id="datepicker"/>
+  <%= form_with(model: @date_range) do |form| %>
+    <div style='display: none;'>
+      <%= form.text_field :start_date, { id: 'startDate' } %>
+    </div>
 
-    <%= form_with(model: @date_range) do |form| %>
-      <div style='display: none;'>
-        <%= form.text_field :start_date, { id: 'startDate' } %>
-      </div>
+    <div style='display: none;'>
+      <%= form.text_field :end_date, { id: 'endDate' } %>
+    </div>
 
-      <div style='display: none;'>
-        <%= form.text_field :end_date, { id: 'endDate' } %>
-      </div>
+    <div style='display: none;'>
+      <%= form.text_field :created_by, value:  Rails.configuration.app_name %>
+    </div>
 
-      <div style='display: none;'>
-        <%= form.text_field :created_by, value:  Rails.configuration.app_name %>
-      </div>
-
-      <div>
-        <%= form.submit %>
-      </div>
-    <% end %>
-</turbo-frame>
+    <div>
+      <%= form.submit %>
+    </div>
+  <% end %>
+</div>
