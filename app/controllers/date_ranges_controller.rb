@@ -32,11 +32,19 @@ class DateRangesController < ApplicationController
 
   # POST /date_ranges or /date_ranges.json
   def create
-    @date_range = DateRange.new(date_range_params)
+    @date_range = DateRange.new(
+      user: current_user,
+      start_date: date_range_params['start_date'].to_date,
+      end_date: date_range_params['start_date'].to_date,
+      created_by: date_range_params['created_by']
+    )
+
+
+    Rails.logger.info(date_range_params)
 
     respond_to do |format|
       if @date_range.save
-        format.html { redirect_to calendar_url, notice: "Date range was successfully created." }
+        format.html { render :calendar, notice: "Date range was successfully created." }
         format.json { render :show, status: :created, location: @date_range }
       else
         format.html { render :calendar, status: :unprocessable_entity }
