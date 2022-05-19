@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @date_range %>
+
+<div>
+  <%= link_to "Edit this date range", edit_date_range_path(@date_range) %> |
+  <%= link_to "Back to date ranges", date_ranges_path %>
+
+  <%= button_to "Destroy this date range", @date_range, method: :delete %>
+</div>

@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  root to: 'date_ranges#calendar'
 
-  # Defines the root path route ("/")
-  # root "articles#index"
+  resources :date_ranges
+  devise_for :users
+
+  get '/calendar', to: 'date_ranges#calendar', as: 'calendar'
 end

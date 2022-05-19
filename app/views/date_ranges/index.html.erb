@@ -1,0 +1,14 @@
+<p style="color: green"><%= notice %></p>
+
+<h1>Date ranges</h1>
+
+<div id="date_ranges">
+  <% @date_ranges.each do |date_range| %>
+    <%= render date_range %>
+    <p>
+      <%= link_to "Show this date range", date_range %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New date range", new_date_range_path %>

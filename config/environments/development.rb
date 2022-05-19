@@ -69,4 +69,6 @@ Rails.application.configure do
 
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
+  config.app_name = ENV.fetch('APP_NAME', 'alpha')
+  config.pair_app_port = ENV.fetch('PAIR_APP_PORT', '3001')
 end
