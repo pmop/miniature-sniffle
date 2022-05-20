@@ -45,7 +45,7 @@ class DateRangesController < ApplicationController
     respond_to do |format|
       if @date_range.save
         format.html { redirect_to calendar_url, notice: "Date range was successfully created." }
-        format.json { render :calendar }
+        format.json { render json: @date_range.to_json }
       else
         format.html { render :calendar, status: :unprocessable_entity }
         format.json { render json: @date_range.errors, status: :unprocessable_entity }
@@ -77,6 +77,17 @@ class DateRangesController < ApplicationController
   end
 
   private
+    def authenticate_user!
+      authenticate_or_request_with_http_basic do |email, password|
+        resource = User.find_by_email(email)
+        if resource
+          sign_in :user, resource if resource.valid_password?(password)
+        else
+          request_http_basic_authentication
+        end
+      end
+    end
+
     # Use callbacks to share common setup or constraints between actions.
     def set_date_range
       @date_range = DateRange.find(params[:id])
