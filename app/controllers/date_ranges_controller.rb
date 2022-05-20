@@ -35,6 +35,8 @@ class DateRangesController < ApplicationController
 
     respond_to do |format|
       if @date_range.save
+        broadcast_date_range
+
         format.json { render json: @date_range.to_json }
       else
         format.json { render json: @date_range.errors, status: :unprocessable_entity }
@@ -66,7 +68,7 @@ class DateRangesController < ApplicationController
 
     def sync_with_peer(date_range)
       user = current_user
-      url = "http://localhost:#{Rails.configuration.pair_app_port}"
+      url = "http://localhost:#{Rails.configuration.peer_app_port}"
       conn = Faraday.new(url) do |conn|
         conn.request :authorization, :basic, user.email, user.password
         conn.request :url_encoded
@@ -76,7 +78,7 @@ class DateRangesController < ApplicationController
 
       date_range[:date_range].merge!(created_by: app_name)
 
-      conn.post('/date_ranges', date_range)
+      conn.post('/api/date_ranges', date_range)
     end
 
     def broadcast_date_range
@@ -93,8 +95,7 @@ class DateRangesController < ApplicationController
     end
 
     def sync_with_peer?
-      #Rails.configuration.sync_with_pair
-      false
+      Rails.configuration.sync_with_peer
     end
 
     def app_name

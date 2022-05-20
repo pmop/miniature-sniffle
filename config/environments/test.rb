@@ -57,4 +57,7 @@ Rails.application.configure do
 
   # Annotate rendered view with file names.
   # config.action_view.annotate_rendered_view_with_filenames = true
+  #
+  config.app_name = ENV.fetch('APP_NAME', 'test')
+  config.sync_with_peer = false
 end
