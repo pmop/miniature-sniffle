@@ -91,5 +91,6 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
   config.app_name = ENV.fetch('APP_NAME', 'alpha')
-  config.pair_app_port = ENV.fetch('PAIR_APP_PORT', '3001')
+  config.peer_app_port = ENV.fetch('PAIR_APP_PORT', '3001')
+  config.sync_with_peer = true
 end
