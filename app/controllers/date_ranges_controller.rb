@@ -1,5 +1,5 @@
 class DateRangesController < ApplicationController
-  protect_from_forgery except: :create_json_api
+  protect_from_forgery except: %i[create_json_api create]
   before_action :authenticate_user!, except: :create_json_api
 
   def calendar
@@ -111,6 +111,6 @@ class DateRangesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def date_range_params
-      params.require(:date_range).permit(:user_id, :start_date, :end_date, :created_by)
+      params.require(:date_range).permit(:user_email, :user_id, :start_date, :end_date, :created_by)
     end
 end
