@@ -9,17 +9,16 @@ export default class extends Controller {
     consumer.subscriptions.create(
       { channel: "DateRangeChannel" , request_id: this.data.get('request') },
       {
-        received(data) {
-          console.log('received actioncable')
-          console.log(data)
-        }
+        connected:    this._cableConnected.bind(this),
+        disconnected: this._cableDisconnected.bind(this),
+        received:     this._cableReceived.bind(this),
       }
     );
 
     this.fetchDateRangesAndRender()
   }
 
-  renderDatePicker() {
+  _renderDatePicker() {
     const picker = new Litepicker({
       element:                 document.getElementById('datepicker'),
       scrollToDate:            new Date(),
@@ -54,7 +53,7 @@ export default class extends Controller {
     fetch('/calendar', { headers: { 'Accept': 'application/json' } } )
       .then(response => response.json())
       .then(data => this.setBlockedRanges(Array.from(data.map(toDateRange))))
-      .then(data => this.renderDatePicker())
+      .then(data => this._renderDatePicker())
   }
 
   setBlockedRanges(blockedRanges) {
@@ -62,10 +61,44 @@ export default class extends Controller {
     this.data.blockedDateRanges = blockedRanges;
   }
 
+  _cableConnected() {
+  }
+
+  _cableDisconnected() {
+  }
+
+  _cableReceived(data) {
+    this.data.blockedDateRanges = [...this.data.blockedDateRanges, data.data];
+
+    this.picker.setLockDays(this.data.blockedDateRanges);
+    this.picker.clearSelection()
+  }
+
   createDateRangeBlock() {
     if((this.data.startDate.length > 0) && (this.data.endDate.length > 0)) {
-      // do post request
+      const data = {
+        date_range: {
+          start_date: this.data.startDate,
+          end_date:   this.data.endDate,
+          created_by: this.data.get('appname')
+        }
+      };
 
+      fetch('/date_ranges', {
+          method: 'POST',
+          headers: {
+                'Content-Type': 'application/json',
+                'Accept':       'application/json'
+              },
+          body: JSON.stringify(data),
+      })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
     }
     else {
       console.log('undefined dates');
