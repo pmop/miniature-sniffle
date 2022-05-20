@@ -1,7 +1,18 @@
 import { Controller } from "@hotwired/stimulus"
+import consumer from "channels/consumer"
 
 export default class extends Controller {
   connect() {
+    consumer.subscriptions.create(
+      { channel: "DateRangeChannel" , request_id: this.data.get('request') },
+      {
+        received(data) {
+          console.log('received actioncable')
+          console.log(data)
+        }
+      }
+    );
+
     this.fetchDateRangesAndRender()
   }
 

@@ -1,4 +1,4 @@
-<div data-controller="hello">
+<div data-controller="hello" data-hello-request="<%= current_user.email %>">
   <div id="datepicker"/>
   <%= form_with(model: @date_range) do |form| %>
     <div style='display: none;'>
