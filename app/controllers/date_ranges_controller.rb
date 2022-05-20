@@ -1,6 +1,5 @@
 class DateRangesController < ApplicationController
-  protect_from_forgery except: :create
-  before_action :set_date_range, only: %i[ show edit update destroy ]
+  protect_from_forgery except: :create_json_api
   before_action :authenticate_user!
 
   def calendar
@@ -13,38 +12,15 @@ class DateRangesController < ApplicationController
     end
   end
 
-  # GET /date_ranges or /date_ranges.json
-  def index
-    @date_ranges = DateRange.all
-  end
-
-  # GET /date_ranges/1 or /date_ranges/1.json
-  def show
-  end
-
-  # GET /date_ranges/new
-  def new
-    @date_range = DateRange.new
-  end
-
-  # GET /date_ranges/1/edit
-  def edit
-  end
-
   # POST /date_ranges or /date_ranges.json
   def create
-    @date_range = DateRange.new(
-      user:       current_user,
-      start_date: date_range_params['start_date'].to_date,
-      end_date:   date_range_params['end_date'].to_date,
-      created_by: date_range_params['created_by']
-    )
-
-    Rails.logger.info(date_range_params)
+    @date_range = new_date_range
 
     respond_to do |format|
       if @date_range.save
-        post_date_range_to_pair(date_range) if sync_with_pair?
+        sync_with_peer(date_range_params) if sync_with_peer?
+        broadcast_date_range
+
         format.html { redirect_to calendar_url, notice: "Date range was successfully created." }
         format.json { render json: @date_range.to_json }
       else
@@ -54,26 +30,15 @@ class DateRangesController < ApplicationController
     end
   end
 
-  # PATCH/PUT /date_ranges/1 or /date_ranges/1.json
-  def update
+  def create_json_api
+    @date_range = new_date_range
+
     respond_to do |format|
-      if @date_range.update(date_range_params)
-        format.html { redirect_to date_range_url(@date_range), notice: "Date range was successfully updated." }
-        format.json { render :show, status: :ok, location: @date_range }
+      if @date_range.save
+        format.json { render json: @date_range.to_json }
       else
-        format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @date_range.errors, status: :unprocessable_entity }
       end
-    end
-  end
-
-  # DELETE /date_ranges/1 or /date_ranges/1.json
-  def destroy
-    @date_range.destroy
-
-    respond_to do |format|
-      format.html { redirect_to date_ranges_url, notice: "Date range was successfully destroyed." }
-      format.json { head :no_content }
     end
   end
 
@@ -89,7 +54,17 @@ class DateRangesController < ApplicationController
       end
     end
 
-    def post_date_range_to_pair(date_range)
+    def new_date_range
+      Rails.logger.info(date_range_params)
+      DateRange.new(
+        user:       current_user,
+        start_date: date_range_params['start_date'].to_date,
+        end_date:   date_range_params['end_date'].to_date,
+        created_by: date_range_params['created_by']
+      )
+    end
+
+    def sync_with_peer(date_range)
       user = current_user
       url = "http://localhost:#{Rails.configuration.pair_app_port}"
       conn = Faraday.new(url) do |conn|
@@ -104,13 +79,26 @@ class DateRangesController < ApplicationController
       conn.post('/date_ranges', date_range)
     end
 
-    def sync_with_pair?
+    def broadcast_date_range
+      channel = "DateRangeChannel_#{current_user.email}@#{app_name}"
+      ActionCable.server.broadcast(
+        channel,
+        {
+          data: [
+            date_range_params[:start_date].to_date.to_s,
+            date_range_params[:end_date].to_date.to_s
+          ]
+        }
+      )
+    end
+
+    def sync_with_peer?
       #Rails.configuration.sync_with_pair
       false
     end
 
     def app_name
-      Rails.configuration.app_name
+      @app_name ||= Rails.configuration.app_name
     end
 
     # Use callbacks to share common setup or constraints between actions.
