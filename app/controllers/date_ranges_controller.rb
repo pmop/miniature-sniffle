@@ -1,4 +1,5 @@
 class DateRangesController < ApplicationController
+  protect_from_forgery except: :create
   before_action :set_date_range, only: %i[ show edit update destroy ]
   before_action :authenticate_user!
 
@@ -33,17 +34,17 @@ class DateRangesController < ApplicationController
   # POST /date_ranges or /date_ranges.json
   def create
     @date_range = DateRange.new(
-      user: current_user,
+      user:       current_user,
       start_date: date_range_params['start_date'].to_date,
-      end_date: date_range_params['end_date'].to_date,
+      end_date:   date_range_params['end_date'].to_date,
       created_by: date_range_params['created_by']
     )
-
 
     Rails.logger.info(date_range_params)
 
     respond_to do |format|
       if @date_range.save
+        post_date_range_to_pair(date_range) if sync_with_pair?
         format.html { redirect_to calendar_url, notice: "Date range was successfully created." }
         format.json { render json: @date_range.to_json }
       else
@@ -86,6 +87,30 @@ class DateRangesController < ApplicationController
           request_http_basic_authentication
         end
       end
+    end
+
+    def post_date_range_to_pair(date_range)
+      user = current_user
+      url = "http://localhost:#{Rails.configuration.pair_app_port}"
+      conn = Faraday.new(url) do |conn|
+        conn.request :authorization, :basic, user.email, user.password
+        conn.request :url_encoded
+        conn.response :json
+        conn.adapter :net_http
+      end
+
+      date_range[:date_range].merge!(created_by: app_name)
+
+      conn.post('/date_ranges', date_range)
+    end
+
+    def sync_with_pair?
+      #Rails.configuration.sync_with_pair
+      false
+    end
+
+    def app_name
+      Rails.configuration.app_name
     end
 
     # Use callbacks to share common setup or constraints between actions.
