@@ -1,6 +1,7 @@
 development:
   adapter: redis
   url: redis://localhost:6379/1
+  channel_prefix: alpha_dev
 
 test:
   adapter: test
@@ -8,4 +9,4 @@ test:
 production:
   adapter: redis
   url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
-  channel_prefix: xapp2_production
+  channel_prefix: alpha_prod
